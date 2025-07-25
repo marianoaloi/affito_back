@@ -1,0 +1,19 @@
+[project]
+id = "serveraffitofirebase"
+name = "Backend affito"
+version = "1.0.0"
+
+[[project.licenses]]
+type = "Apache-2.0"
+
+[build]
+include = [
+    "**/*.js",
+    "**/*.json", 
+    "package*.json",
+    "src/**",
+    "public/**"
+]
+
+[[build.buildpacks]]
+uri = "gcr.io/buildpacks/nodejs"  # or appropriate buildpack for your language
