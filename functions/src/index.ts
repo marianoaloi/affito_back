@@ -54,7 +54,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
 
-    origin: function(origin: string | undefined, callback: any) {
+    origin: function (origin: string | undefined, callback: any) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) {
             return callback(null, true);
@@ -62,7 +62,13 @@ app.use(cors({
         if (allowedOrigins.includes(origin)) {
             return callback(null, true);
         } else {
-            return callback(new Error("Not allowed by CORS"));
+            if (origin.includes("localhost")) {
+                allowedOrigins.push(origin);
+                return callback(null, true);
+
+            } else {
+                return callback(new Error("Not allowed by CORS"));
+            }
         }
     },
     credentials: true, // if you need to send cookies or auth headers
@@ -86,12 +92,12 @@ async function connectToMongoDB() {
         });
 
         await client.connect();
-        console.log("Connected to MongoDB successfully");
+        logger.log("Connected to MongoDB successfully");
 
         // Test the connection
         const db = client.db(config.mongodb.database);
         await db.admin().ping();
-        console.log("Database ping successful");
+        logger.log("Database ping successful");
 
         // Swagger (OpenAPI) setup
         const swaggerOptions = {
@@ -124,7 +130,7 @@ async function connectToMongoDB() {
         // API Routes
         app.use("/api", apiRouter(client!));
     } catch (error) {
-        console.error("Failed to connect to MongoDB:", error);
+        logger.error("Failed to connect to MongoDB:", error);
         process.exit(1);
     }
 }

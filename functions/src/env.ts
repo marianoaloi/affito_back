@@ -15,7 +15,7 @@ export const config = {
     certificatePath: path.resolve(__dirname + "/X509-cert-2864290664025085959.pem")
   },
   server: {
-    port: process.env.PORT || 5000,
+    port: process.env.PORT || 5088,
     nodeEnv: process.env.NODE_ENV || "development"
   }
 };

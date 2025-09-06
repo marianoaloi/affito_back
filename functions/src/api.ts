@@ -89,7 +89,7 @@ export const apiRouter = (client: MongoClient) => {
     try {
       const db = client.db(config.mongodb.database);
       const collection = db.collection(config.mongodb.collection);
-      const { priceMin, priceMax, stateMaloi, elevator, floor } = req.body;
+      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName } = req.body;
 
       const query: any = { deleted: { $exists: false } };
 
@@ -120,6 +120,11 @@ export const apiRouter = (client: MongoClient) => {
 
       if (floor !== undefined) {
         query["realEstate.properties.featureList.compactLabel"] = floor;
+      }
+
+      if(agentName !== undefined){
+        console.log(agentName);
+        query["realEstate.advertiser.agency.displayName"] = {'$regex':agentName, '$options': "i"};
       }
 
       // Get all documents from the collection
@@ -266,10 +271,9 @@ export const apiRouter = (client: MongoClient) => {
       const collection = db.collection(config.mongodb.collection);
       const filter = { _id: parseInt(id) as any };
 
-      if(user.email != 'mariano@aloi.com.br'){
+      if (user.email != "mariano@aloi.com.br") {
         merror = "Only Mariano Aloi can change the status.";
         throw new Error(merror);
-      
       }
 
       const result = await collection.updateOne(
