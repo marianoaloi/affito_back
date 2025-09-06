@@ -122,9 +122,9 @@ export const apiRouter = (client: MongoClient) => {
         query["realEstate.properties.featureList.compactLabel"] = floor;
       }
 
-      if(agentName !== undefined){
+      if (agentName !== undefined) {
         console.log(agentName);
-        query["realEstate.advertiser.agency.displayName"] = {'$regex':agentName, '$options': "i"};
+        query["realEstate.advertiser.agency.displayName"] = {"$regex": agentName, "$options": "i"};
       }
 
       // Get all documents from the collection

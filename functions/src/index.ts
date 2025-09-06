@@ -54,7 +54,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
 
-    origin: function (origin: string | undefined, callback: any) {
+    origin: function(origin: string | undefined, callback: any) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) {
             return callback(null, true);
@@ -65,7 +65,6 @@ app.use(cors({
             if (origin.includes("localhost")) {
                 allowedOrigins.push(origin);
                 return callback(null, true);
-
             } else {
                 return callback(new Error("Not allowed by CORS"));
             }
@@ -128,7 +127,7 @@ async function connectToMongoDB() {
         });
 
         // API Routes
-        app.use("/api", apiRouter(client!));
+        app.use("/api", apiRouter(client));
     } catch (error) {
         logger.error("Failed to connect to MongoDB:", error);
         process.exit(1);
@@ -137,7 +136,7 @@ async function connectToMongoDB() {
 
 
 // Error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: Error, req: express.Request, res: express.Response) => {
     console.error("Unhandled error:", err);
     res.status(500).json({
         success: false,
