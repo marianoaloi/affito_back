@@ -89,7 +89,7 @@ export const apiRouter = (client: MongoClient) => {
     try {
       const db = client.db(config.mongodb.database);
       const collection = db.collection(config.mongodb.collection);
-      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName } = req.body;
+      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province } = req.body;
 
       const query: any = { deleted: { $exists: false } };
 
@@ -124,8 +124,14 @@ export const apiRouter = (client: MongoClient) => {
 
       if (agentName !== undefined) {
         console.log(agentName);
-        query["realEstate.advertiser.agency.displayName"] = {"$regex": agentName, "$options": "i"};
+        query["realEstate.advertiser.agency.displayName"] = { "$regex": agentName, "$options": "i" };
       }
+
+      if (province !== undefined) {
+        query["realEstate.properties.location.province"] = province;
+      }
+
+
 
       // Get all documents from the collection
       const documents = await collection.find(query).toArray();
