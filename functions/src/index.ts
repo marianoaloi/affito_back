@@ -38,6 +38,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 import path from "path";
 import { config } from "./env";
 import { apiRouter } from "./api";
+import { statisticRouter } from "./statistic";
 
 
 const app = express();
@@ -128,6 +129,7 @@ async function connectToMongoDB() {
 
         // API Routes
         app.use("/api", apiRouter(client!));
+        app.use("/statistic", statisticRouter(client!));
     } catch (error) {
         logger.error("Failed to connect to MongoDB:", error);
         process.exit(1);
@@ -136,7 +138,7 @@ async function connectToMongoDB() {
 
 
 // Error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error("Unhandled error:", err);
     res.status(500).json({
         success: false,

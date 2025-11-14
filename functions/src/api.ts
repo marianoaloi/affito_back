@@ -60,12 +60,15 @@ export const apiRouter = (client: MongoClient) => {
    *                 enum: ["Sì", "No"]
    *               floor:
    *                 type: number
+   *               provice:
+   *                 type: string
    *           example:
    *             priceMin: 100
    *             priceMax: 500
    *             stateMaloi: 1
    *             elevator: "Sì"
    *             floor: 2
+   *             province: "Udine"
    *     responses:
    *       200:
    *         description: A list of documents.
@@ -89,52 +92,76 @@ export const apiRouter = (client: MongoClient) => {
     try {
       const db = client.db(config.mongodb.database);
       const collection = db.collection(config.mongodb.collection);
-      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province } = req.body;
+      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province, accessoDisabili } = req.body;
 
-      const query: any = { deleted: { $exists: false } };
+      const query: any = [
+        {
+          '$match': {
+            'deleted': {
+              '$exists': false
+            }
+          }
+        }, {
+          '$project': {
+            '_id': 1,
+            'stateMaloi': 1,
+            'realEstate': {
+              'properties': '$powerproperties',
+              'title': 1,
+              'price': 1
+            }
+          }
+        }
+      ];
 
       if (priceMin !== undefined || priceMax !== undefined) {
-        query.price = {};
+        query[0]["$match"].price = {};
         if (priceMin !== undefined) {
-          query.price.$gte = priceMin;
+          query[0]["$match"].price.$gte = priceMin;
         }
         if (priceMax !== undefined) {
-          query.price.$lte = priceMax;
+          query[0]["$match"].price.$lte = priceMax;
         }
       }
 
       if (stateMaloi !== undefined) {
-        query.stateMaloi = stateMaloi;
+        query[0]["$match"].stateMaloi = stateMaloi;
         if (stateMaloi === -1) {
-          query.stateMaloi = { $exists: false };
+          query[0]["$match"].stateMaloi = { $exists: false };
         }
       }
 
       if (elevator !== undefined) {
         if (elevator === "empty") {
-          query["realEstate.properties.featureList.type"] = { "$ne": "elevator" };
+          query[0]["$match"]["realEstate.properties.mainFeatures.type"] = { "$ne": "elevator" };
         } else {
-          query["realEstate.properties.featureList.compactLabel"] = elevator;
+          query[0]["$match"]["realEstate.properties.mainFeatures.compactLabel"] = elevator;
         }
       }
 
       if (floor !== undefined) {
-        query["realEstate.properties.featureList.compactLabel"] = floor;
+        query[0]["$match"]["realEstate.properties.floor"] = { "$regex": floor, "$options": "i" };
       }
 
       if (agentName !== undefined) {
         console.log(agentName);
-        query["realEstate.advertiser.agency.displayName"] = { "$regex": agentName, "$options": "i" };
+        query[0]["$match"]["realEstate.advertiser.agency.displayName"] = { "$regex": agentName, "$options": "i" };
       }
 
       if (province !== undefined) {
-        query["realEstate.properties.location.province"] = province;
+        query[0]["$match"]["realEstate.properties.location.province"] = province;
       }
 
-
+      if (accessoDisabili !== undefined) {
+        query[0]["$match"]["powerproperties.primaryFeatures.name"] = "Accesso per disabili";
+        query[0]["$match"]["powerproperties.primaryFeatures.value"] = parseInt(accessoDisabili);
+      }
 
       // Get all documents from the collection
-      const documents = await collection.find(query).toArray();
+      const resultQuery = await collection.aggregate(query).toArray()
+      const documents = accessoDisabili !== undefined ? 
+      resultQuery.filter(rq => rq.realEstate.properties.primaryFeatures.filter((pf : any)=> pf.name == "Accesso per disabili" && pf.value == accessoDisabili).length > 0) : 
+      resultQuery;
 
       res.json({
         success: true,
