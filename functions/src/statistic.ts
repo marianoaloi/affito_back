@@ -13,19 +13,19 @@ export const statisticRouter = (client: MongoClient) => {
 
       const query: any = [
         {
-          '$match': {
-            'deleted': {
-              '$exists': false
+          "$match": {
+            "deleted": {
+              "$exists": false
             }
           }
         }, {
-          '$project': {
-            '_id': 1,
-            'stateMaloi': 1,
-            'realEstate': {
-              'properties': '$powerproperties',
-              'title': 1,
-              'price': 1
+          "$project": {
+            "_id": 1,
+            "stateMaloi": 1,
+            "realEstate": {
+              "properties": "$powerproperties",
+              "title": 1,
+              "price": 1
             }
           }
         }

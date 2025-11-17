@@ -96,19 +96,19 @@ export const apiRouter = (client: MongoClient) => {
 
       const query: any = [
         {
-          '$match': {
-            'deleted': {
-              '$exists': false
+          "$match": {
+            "deleted": {
+              "$exists": false
             }
           }
         }, {
-          '$project': {
-            '_id': 1,
-            'stateMaloi': 1,
-            'realEstate': {
-              'properties': '$powerproperties',
-              'title': 1,
-              'price': 1
+          "$project": {
+            "_id": 1,
+            "stateMaloi": 1,
+            "realEstate": {
+              "properties": "$powerproperties",
+              "title": 1,
+              "price": 1
             }
           }
         }
@@ -158,10 +158,14 @@ export const apiRouter = (client: MongoClient) => {
       }
 
       // Get all documents from the collection
-      const resultQuery = await collection.aggregate(query).toArray()
-      const documents = accessoDisabili !== undefined ? 
-      resultQuery.filter(rq => rq.realEstate.properties.primaryFeatures.filter((pf : any)=> pf.name == "Accesso per disabili" && pf.value == accessoDisabili).length > 0) : 
-      resultQuery;
+      const resultQuery = await collection.aggregate(query).toArray();
+      const documents = accessoDisabili !== undefined ?
+        resultQuery.filter((rq) =>
+          rq.realEstate.properties.primaryFeatures.filter(
+            (pf : any)=> pf.name == "Accesso per disabili" && pf.value == accessoDisabili
+          ).length > 0
+        ) :
+        resultQuery;
 
       res.json({
         success: true,

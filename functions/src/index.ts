@@ -128,8 +128,11 @@ async function connectToMongoDB() {
         });
 
         // API Routes
-        app.use("/api", apiRouter(client!));
-        app.use("/statistic", statisticRouter(client!));
+        if (!client) {
+            throw new Error("MongoDB client not initialized");
+        }
+        app.use("/api", apiRouter(client));
+        app.use("/statistic", statisticRouter(client));
     } catch (error) {
         logger.error("Failed to connect to MongoDB:", error);
         process.exit(1);
@@ -138,6 +141,7 @@ async function connectToMongoDB() {
 
 
 // Error handling middleware
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error("Unhandled error:", err);
     res.status(500).json({
