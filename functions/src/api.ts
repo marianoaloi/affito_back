@@ -153,19 +153,32 @@ export const apiRouter = (client: MongoClient) => {
       }
 
       if (accessoDisabili !== undefined) {
-        query[0]["$match"]["powerproperties.primaryFeatures.name"] = "Accesso per disabili";
-        query[0]["$match"]["powerproperties.primaryFeatures.value"] = parseInt(accessoDisabili);
+        query.push(
+          {
+            $lookup:
+            {
+              from: "primaryFeatures",
+              localField: "_id",
+              foreignField: "_id",
+              as: "primaryFeatures"
+            }
+          }
+        );
+        query.push(
+          {
+            $match:
+            {
+              "primaryFeatures.Accesso_per_disabili": accessoDisabili == -1 ? {
+                $exists: false
+              } : accessoDisabili
+            }
+          }
+        );
       }
 
       // Get all documents from the collection
       const resultQuery = await collection.aggregate(query).toArray();
-      const documents = accessoDisabili !== undefined ?
-        resultQuery.filter((rq) =>
-          rq.realEstate.properties.primaryFeatures.filter(
-            (pf : any)=> pf.name == "Accesso per disabili" && pf.value == accessoDisabili
-          ).length > 0
-        ) :
-        resultQuery;
+      const documents = resultQuery;
 
       res.json({
         success: true,
