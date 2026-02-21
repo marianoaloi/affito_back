@@ -91,7 +91,7 @@ export const apiRouter = (client: MongoClient) => {
   router.post("/affito", async (req, res) => {
     try {
       const db = client.db(config.mongodb.database);
-      const collection = db.collection(req.query.truffa ? 'truffa' : config.mongodb.collection);
+      const collection = db.collection(req.query.truffa ? "truffa" : config.mongodb.collection);
       const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province, accessoDisabili } = req.body;
 
       const query: any = [
@@ -106,12 +106,12 @@ export const apiRouter = (client: MongoClient) => {
             "_id": 1,
             "stateMaloi": 1,
 
-            "create": { "$convert": { "input": { "$multiply": ['$mCreateDate', 1000] }, "to": 'date' } },
-            "last": { "$convert": { "input": { "$multiply": ['$mLastUpdate', 1000] }, "to": 'date' } },
-            "imobiliare": { "$convert": { "input": { "$multiply": ['$mLastImmobiliareUpdate', 1000] }, "to": 'date' } },
+            "create": { "$convert": { "input": { "$multiply": ["$mCreateDate", 1000] }, "to": "date" } },
+            "last": { "$convert": { "input": { "$multiply": ["$mLastUpdate", 1000] }, "to": "date" } },
+            "imobiliare": { "$convert": { "input": { "$multiply": ["$mLastImmobiliareUpdate", 1000] }, "to": "date" } },
 
             "realEstate": {
-              "properties": {$ifNull:['$powerproperties',{$first:'$realEstate.properties'}]},
+              "properties": {$ifNull: ["$powerproperties", {$first: "$realEstate.properties"}]},
               "title": 1,
               "price": 1
             }
