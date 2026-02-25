@@ -113,7 +113,8 @@ export const apiRouter = (client: MongoClient) => {
             "realEstate": {
               "properties": {$ifNull: ["$powerproperties", {$first: "$realEstate.properties"}]},
               "title": 1,
-              "price": 1
+              "price": 1,
+              "elevation" : 1
             }
           }
         }
@@ -344,6 +345,97 @@ export const apiRouter = (client: MongoClient) => {
       res.json({
         success: true,
         message: "State updated successfully"
+      });
+    } catch (error) {
+      console.error("Error updating document:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to update document " + error
+      });
+    }
+    return;
+  });
+
+  /**
+   * @swagger
+   * /api/affito/{id}/setDescription:
+   *   post:
+   *     summary: Update the description of an affito document
+   *     tags: [Affito]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         schema:
+   *           type: integer
+   *         required: true
+   *         description: Numeric ID of the document to update.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - description
+   *             properties:
+   *               description:
+   *                 type: string
+   *                 description: The new description for the document.
+   *             example:
+   *               description: "Appartamento luminoso in centro storico"
+   *     responses:
+   *       200:
+   *         description: Description updated successfully.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 message:
+   *                   type: string
+   *       400:
+   *         description: Invalid description value provided.
+   *       404:
+   *         description: Document not found.
+   *       500:
+   *         description: Failed to update document.
+   */
+  router.post("/affito/:id/setDescription", async (req, res) => {
+    const user = await authenticate(req, res);
+    if (!user) {
+      return;
+    }
+
+    try {
+      const { id } = req.params;
+      const { description } = req.body;
+
+      let merror = "";
+
+      if (typeof description !== "string" || description.trim() === "") {
+        merror = "Invalid description value. Must be a non-empty string.";
+        throw new Error(merror);
+      }
+
+      const db = client.db(config.mongodb.database);
+      const collection = db.collection(config.mongodb.collection);
+      const filter = { _id: parseInt(id) as any };
+
+      const result = await collection.updateOne(
+        filter,
+        { $set: { description: description.trim(), mLastUpdate: new Date().getTime() / 1000, userUpdate: user.email } }
+      );
+
+      if (result.matchedCount === 0) {
+        merror = "Document not found";
+        throw new Error(merror);
+      }
+
+      res.json({
+        success: true,
+        message: "Description updated successfully"
       });
     } catch (error) {
       console.error("Error updating document:", error);
