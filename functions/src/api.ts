@@ -106,15 +106,17 @@ export const apiRouter = (client: MongoClient) => {
             "_id": 1,
             "stateMaloi": 1,
 
+            "elevation": 1,
+
             "create": { "$convert": { "input": { "$multiply": ["$mCreateDate", 1000] }, "to": "date" } },
             "last": { "$convert": { "input": { "$multiply": ["$mLastUpdate", 1000] }, "to": "date" } },
             "imobiliare": { "$convert": { "input": { "$multiply": ["$mLastImmobiliareUpdate", 1000] }, "to": "date" } },
 
             "realEstate": {
-              "properties": {$ifNull: ["$powerproperties", {$first: "$realEstate.properties"}]},
+              "properties": { $ifNull: ["$powerproperties", { $first: "$realEstate.properties" }] },
               "title": 1,
               "price": 1,
-              "elevation" : 1
+              "description": 1
             }
           }
         }
@@ -146,7 +148,7 @@ export const apiRouter = (client: MongoClient) => {
       }
 
       if (floor !== undefined) {
-        query[0]["$match"]["realEstate.properties.floor"] = { "$regex": floor, "$options": "i" };
+        query[0]["$match"]["realEstate.properties.floor.abbreviation"] = { "$regex": floor == "Terra" ? /t/ : /^[^t]/, "$options": "i" };
       }
 
       if (agentName !== undefined) {
@@ -425,7 +427,7 @@ export const apiRouter = (client: MongoClient) => {
 
       const result = await collection.updateOne(
         filter,
-        { $set: { description: description.trim(), mLastUpdate: new Date().getTime() / 1000, userUpdate: user.email } }
+        { $set: { "description": description.trim(), mLastUpdate: new Date().getTime() / 1000, userUpdate: user.email } }
       );
 
       if (result.matchedCount === 0) {
