@@ -92,14 +92,15 @@ export const apiRouter = (client: MongoClient) => {
     try {
       const db = client.db(config.mongodb.database);
       const collection = db.collection(req.query.truffa ? "truffa" : config.mongodb.collection);
-      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province, accessoDisabili } = req.body;
+      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province, accessoDisabili , type} = req.body;
 
       const query: any = [
         {
           "$match": {
             "deleted": {
               "$exists": false
-            }
+            },
+            "type": type || 'a'
           }
         }, {
           "$project": {
@@ -107,6 +108,7 @@ export const apiRouter = (client: MongoClient) => {
             "stateMaloi": 1,
 
             "elevation": 1,
+            "type": 1,
 
             "create": { "$convert": { "input": { "$multiply": ["$mCreateDate", 1000] }, "to": "date" } },
             "last": { "$convert": { "input": { "$multiply": ["$mLastUpdate", 1000] }, "to": "date" } },
