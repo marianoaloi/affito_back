@@ -92,7 +92,7 @@ export const apiRouter = (client: MongoClient) => {
     try {
       const db = client.db(config.mongodb.database);
       const collection = db.collection(req.query.truffa ? "truffa" : config.mongodb.collection);
-      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province, accessoDisabili , type} = req.body;
+      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province, accessoDisabili, type} = req.body;
 
       const query: any = [
         {
@@ -100,7 +100,7 @@ export const apiRouter = (client: MongoClient) => {
             "deleted": {
               "$exists": false
             },
-            "type": type || 'a'
+            "type": type || "a"
           }
         }, {
           "$project": {
@@ -150,7 +150,8 @@ export const apiRouter = (client: MongoClient) => {
       }
 
       if (floor !== undefined) {
-        query[0]["$match"]["realEstate.properties.floor.abbreviation"] = { "$regex": floor == "Terra" ? /t/ : /^[^t]/, "$options": "i" };
+        query[0]["$match"]["realEstate.properties.floor.abbreviation"] =
+        { "$regex": floor == "Terra" ? /t/ : /^[^t]/, "$options": "i" };
       }
 
       if (agentName !== undefined) {
@@ -429,7 +430,11 @@ export const apiRouter = (client: MongoClient) => {
 
       const result = await collection.updateOne(
         filter,
-        { $set: { "description": description.trim(), mLastUpdate: new Date().getTime() / 1000, userUpdate: user.email } }
+        { $set: {
+          "description": description.trim(),
+          "mLastUpdate": new Date().getTime() / 1000,
+          "userUpdate": user.email
+        } }
       );
 
       if (result.matchedCount === 0) {
