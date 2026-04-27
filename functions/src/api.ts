@@ -92,7 +92,7 @@ export const apiRouter = (client: MongoClient) => {
     try {
       const db = client.db(config.mongodb.database);
       const collection = db.collection(req.query.truffa ? "truffa" : config.mongodb.collection);
-      const {  province, type } = req.body;
+      const { province, type } = req.body;
 
       const query: any = [
         {
