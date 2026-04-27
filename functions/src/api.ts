@@ -92,7 +92,7 @@ export const apiRouter = (client: MongoClient) => {
     try {
       const db = client.db(config.mongodb.database);
       const collection = db.collection(req.query.truffa ? "truffa" : config.mongodb.collection);
-      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province, accessoDisabili, type} = req.body;
+      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province, accessoDisabili, type } = req.body;
 
       const query: any = [
         {
@@ -112,16 +112,39 @@ export const apiRouter = (client: MongoClient) => {
 
             "create": { "$convert": { "input": { "$multiply": ["$mCreateDate", 1000] }, "to": "date" } },
             "last": { "$convert": { "input": { "$multiply": ["$mLastUpdate", 1000] }, "to": "date" } },
-            "imobiliare": { "$convert": { "input": { "$multiply": ["$mLastImmobiliareUpdate", 1000] }, "to": "date" } },
+            "imobiliare": {
+              "$convert": {
+                "input":
+                  { "$multiply": ["$mLastImmobiliareUpdate", 1000] },
+                "to":
+                  "date"
+              }
+            },
 
             "realEstate": {
               "properties": { $ifNull: ["$powerproperties", { $first: "$realEstate.properties" }] },
               "title": 1,
               "price": 1,
               "description": 1,
-              "updatedAt":{ "$convert": { "input":{ "$multiply": ["$realEstatePage.updatedAt", 1000] }, "to": "date" } },
-              "createdAt":{ "$convert": { "input":{ "$multiply": [ "$realEstatePage.createdAt", 1000] }, "to": "date" } },
-              "contractValue":"$realEstatePage.contractValue"
+              "updatedAt": {
+                "$convert": {
+                  "input": {
+                    "$multiply": ["$realEstatePage.updatedAt", 1000]
+                  },
+                  "to":
+                    "date"
+                }
+              },
+              "createdAt": {
+                "$convert": {
+                  "input": {
+                    "$multiply": ["$realEstatePage.createdAt", 1000]
+                  },
+                  "to":
+                    "date"
+                }
+              },
+              "contractValue": "$realEstatePage.contractValue"
 
             }
           }
@@ -155,7 +178,7 @@ export const apiRouter = (client: MongoClient) => {
 
       if (floor !== undefined) {
         query[0]["$match"]["realEstate.properties.floor.abbreviation"] =
-        { "$regex": floor == "Terra" ? /t/ : /^[^t]/, "$options": "i" };
+          { "$regex": floor == "Terra" ? /t/ : /^[^t]/, "$options": "i" };
       }
 
       if (agentName !== undefined) {
@@ -194,6 +217,92 @@ export const apiRouter = (client: MongoClient) => {
       // Get all documents from the collection
       const resultQuery = await collection.aggregate(query).toArray();
       const documents = resultQuery;
+
+      res.json({
+        success: true,
+        data: documents,
+        count: documents.length
+      });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to fetch data from database"
+      });
+    }
+  });
+
+  /**
+   * @swagger
+   * /api/count:
+   *   get:
+   *     summary: Retrieve province-level statistics counts
+   *     description: Returns aggregated counts of properties grouped by province, including totals for various property states and features.
+   *     tags: [Statistics]
+   *     responses:
+   *       200:
+   *         description: Successfully retrieved province statistics.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   description: Indicates if the request was successful.
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: "#/components/schemas/ProvinceCount"
+   *                   description: Array of province count statistics.
+   *                 count:
+   *                   type: integer
+   *                   description: Number of provinces in the result.
+   *             example:
+   *               success: true
+   *               data:
+   *                 - _id: "Trieste"
+   *                   total: 192
+   *                   disable: 14
+   *                   elevator: 108
+   *                   noElevator: 67
+   *                   deny: 110
+   *                   wait: 1
+   *                   accept: 81
+   *                   nodisable: 101
+   *                   emptydisable: 77
+   *                   emptyChoise: 0
+   *                   emptyElevator: 17
+   *                 - _id: "Udine"
+   *                   total: 60
+   *                   disable: 8
+   *                   elevator: 31
+   *                   noElevator: 17
+   *                   deny: 29
+   *                   wait: 1
+   *                   accept: 30
+   *                   nodisable: 20
+   *                   emptydisable: 32
+   *                   emptyChoise: 0
+   *                   emptyElevator: 12
+   *               count: 2
+   *       500:
+   *         description: Failed to fetch data from database.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 error:
+   *                   type: string
+   */
+  router.get("/count", async (req, res) => {
+    try {
+      const db = client.db(config.mongodb.database);
+      const collection = db.collection('count')
+      const documents = await collection.find().toArray()
 
       res.json({
         success: true,
@@ -434,11 +543,13 @@ export const apiRouter = (client: MongoClient) => {
 
       const result = await collection.updateOne(
         filter,
-        { $set: {
-          "description": description.trim(),
-          "mLastUpdate": new Date().getTime() / 1000,
-          "userUpdate": user.email
-        } }
+        {
+          $set: {
+            "description": description.trim(),
+            "mLastUpdate": new Date().getTime() / 1000,
+            "userUpdate": user.email
+          }
+        }
       );
 
       if (result.matchedCount === 0) {

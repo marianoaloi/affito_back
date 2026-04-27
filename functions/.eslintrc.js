@@ -31,13 +31,18 @@ module.exports = {
     "indent": "off",
 
     "linebreak-style": "off",
-    "max-len": ["error", { "code": 120 }],
+    "max-len": ["error", { "code": 240 }],
     "object-curly-spacing": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "no-console": "off",
     "new-cap": "off",
     "comma-dangle": "off",
     "spaced-comment": "off",
+    "key-spacing": "off",
+    "space-before-function-paren": "off",
+    "quotes":"off",
+    "semi" : "off",
+    "no-dupe-keys": "off",
 
   },
 };
