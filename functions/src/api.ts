@@ -118,7 +118,11 @@ export const apiRouter = (client: MongoClient) => {
               "properties": { $ifNull: ["$powerproperties", { $first: "$realEstate.properties" }] },
               "title": 1,
               "price": 1,
-              "description": 1
+              "description": 1,
+              "updatedAt":{ "$convert": { "input":{ "$multiply": ["$realEstatePage.updatedAt", 1000] }, "to": "date" } },
+              "createdAt":{ "$convert": { "input":{ "$multiply": [ "$realEstatePage.createdAt", 1000] }, "to": "date" } },
+              "contractValue":"$realEstatePage.contractValue"
+
             }
           }
         }
