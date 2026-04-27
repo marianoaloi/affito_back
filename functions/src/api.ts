@@ -92,7 +92,7 @@ export const apiRouter = (client: MongoClient) => {
     try {
       const db = client.db(config.mongodb.database);
       const collection = db.collection(req.query.truffa ? "truffa" : config.mongodb.collection);
-      const { priceMin, priceMax, stateMaloi, elevator, floor, agentName, province, accessoDisabili, type } = req.body;
+      const {  province, type } = req.body;
 
       const query: any = [
         {
@@ -151,68 +151,68 @@ export const apiRouter = (client: MongoClient) => {
         }
       ];
 
-      if (priceMin !== undefined || priceMax !== undefined) {
-        query[0]["$match"].price = {};
-        if (priceMin !== undefined) {
-          query[0]["$match"].price.$gte = priceMin;
-        }
-        if (priceMax !== undefined) {
-          query[0]["$match"].price.$lte = priceMax;
-        }
-      }
+      // if (priceMin !== undefined || priceMax !== undefined) {
+      //   query[0]["$match"].price = {};
+      //   if (priceMin !== undefined) {
+      //     query[0]["$match"].price.$gte = priceMin;
+      //   }
+      //   if (priceMax !== undefined) {
+      //     query[0]["$match"].price.$lte = priceMax;
+      //   }
+      // }
 
-      if (stateMaloi !== undefined) {
-        query[0]["$match"].stateMaloi = stateMaloi;
-        if (stateMaloi === -1) {
-          query[0]["$match"].stateMaloi = { $exists: false };
-        }
-      }
+      // if (stateMaloi !== undefined) {
+      //   query[0]["$match"].stateMaloi = stateMaloi;
+      //   if (stateMaloi === -1) {
+      //     query[0]["$match"].stateMaloi = { $exists: false };
+      //   }
+      // }
 
-      if (elevator !== undefined) {
-        if (elevator === "empty") {
-          query[0]["$match"]["realEstate.properties.featureList.type"] = { "$ne": "elevator" };
-        } else {
-          query[0]["$match"]["realEstate.properties.featureList.compactLabel"] = elevator;
-        }
-      }
+      // if (elevator !== undefined) {
+      //   if (elevator === "empty") {
+      //     query[0]["$match"]["realEstate.properties.featureList.type"] = { "$ne": "elevator" };
+      //   } else {
+      //     query[0]["$match"]["realEstate.properties.featureList.compactLabel"] = elevator;
+      //   }
+      // }
 
-      if (floor !== undefined) {
-        query[0]["$match"]["realEstate.properties.floor.abbreviation"] =
-          { "$regex": floor == "Terra" ? /t/ : /^[^t]/, "$options": "i" };
-      }
+      // if (floor !== undefined) {
+      //   query[0]["$match"]["realEstate.properties.floor.abbreviation"] =
+      //     { "$regex": floor == "Terra" ? /t/ : /^[^t]/, "$options": "i" };
+      // }
 
-      if (agentName !== undefined) {
-        console.log(agentName);
-        query[0]["$match"]["realEstate.advertiser.agency.displayName"] = { "$regex": agentName, "$options": "i" };
-      }
+      // if (agentName !== undefined) {
+      //   console.log(agentName);
+      //   query[0]["$match"]["realEstate.advertiser.agency.displayName"] = { "$regex": agentName, "$options": "i" };
+      // }
 
       if (province !== undefined) {
         query[0]["$match"]["realEstate.properties.location.province"] = province;
       }
 
-      if (accessoDisabili !== undefined) {
-        query.push(
-          {
-            $lookup:
-            {
-              from: "primaryFeatures",
-              localField: "_id",
-              foreignField: "_id",
-              as: "primaryFeatures"
-            }
-          }
-        );
-        query.push(
-          {
-            $match:
-            {
-              "primaryFeatures.Accesso_per_disabili": accessoDisabili == -1 ? {
-                $exists: false
-              } : accessoDisabili
-            }
-          }
-        );
-      }
+      // if (accessoDisabili !== undefined) {
+      //   query.push(
+      //     {
+      //       $lookup:
+      //       {
+      //         from: "primaryFeatures",
+      //         localField: "_id",
+      //         foreignField: "_id",
+      //         as: "primaryFeatures"
+      //       }
+      //     }
+      //   );
+      //   query.push(
+      //     {
+      //       $match:
+      //       {
+      //         "primaryFeatures.Accesso_per_disabili": accessoDisabili == -1 ? {
+      //           $exists: false
+      //         } : accessoDisabili
+      //       }
+      //     }
+      //   );
+      // }
 
       // Get all documents from the collection
       const resultQuery = await collection.aggregate(query).toArray();
