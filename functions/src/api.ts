@@ -33,6 +33,8 @@ export const apiRouter = (client: MongoClient) => {
    *     description: Operations related to affito documents
    *   - name: Health
    *     description: API health check
+   *   - name: Statistics
+   *     description: Statistical data and aggregated counts
    */
 
   // API Routes
@@ -106,6 +108,7 @@ export const apiRouter = (client: MongoClient) => {
           "$project": {
             "_id": 1,
             "stateMaloi": 1,
+            "description": 1,
 
             "elevation": 1,
             "type": 1,
@@ -376,6 +379,94 @@ export const apiRouter = (client: MongoClient) => {
     }
   });
 
+  
+  /**
+   * @swagger
+   * /api/affito/bulk/state:
+   *   post:
+   *     summary: Update the state of multiple affito documents
+   *     tags: [Affito]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - realEstateIds
+   *               - stateMaloi
+   *             properties:
+   *               realEstateIds:
+   *                 type: array
+   *                 items:
+   *                   type: integer
+   *                 description: List of document IDs to update.
+   *               stateMaloi:
+   *                 type: integer
+   *                 description: The new state for the documents (0, 1, or 2).
+   *             example:
+   *               realEstateIds: [97417958, 97417959]
+   *               stateMaloi: 1
+   *     responses:
+   *       200:
+   *         description: States updated successfully.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 message:
+   *                   type: string
+   *                 data:
+   *                   type: object
+   *       403:
+   *         description: Unauthorized.
+   *       500:
+   *         description: Failed to update documents.
+   */
+
+  router.post("/affito/bulk/state", async (req, res) => {
+    const user = await authenticate(req, res);
+    if (!user) {
+      return;
+    }
+
+    try {
+      const { realEstateIds, stateMaloi } = req.body;
+
+      const db = client.db(config.mongodb.database);
+      const collection = db.collection(config.mongodb.collection);
+
+      const filter = { _id: { $in: realEstateIds } };
+
+      const result = await collection.updateMany(
+        filter,
+        { $set: { stateMaloi: stateMaloi, mLastUpdate: new Date().getTime() / 1000, userUpdate: user.email } }
+      );
+      let merror = "";
+      if (result.matchedCount === 0) {
+        merror = "Document not found for the ids sent "+JSON.stringify(realEstateIds);
+        throw new Error(merror);
+      }
+      res.json({
+        success: true,
+        message: "State updated successfully",
+        data: result,
+        ids: realEstateIds
+      });
+    } catch (error) {
+      console.error("Error updating document:", error);
+      res.status(500)
+      res.json({
+        success: false,
+        error: "Failed to update document " + error
+      });
+    }
+  });
+
+
   /**
    * @swagger
    * /api/affito/{id}/state:
@@ -473,6 +564,7 @@ export const apiRouter = (client: MongoClient) => {
     }
     return;
   });
+
 
   /**
    * @swagger

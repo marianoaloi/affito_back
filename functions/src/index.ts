@@ -29,6 +29,10 @@ setGlobalOptions({ maxInstances: 10 });
 //   logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 //});
+ 
+
+import { configDotenv } from "dotenv";
+configDotenv({debug: true});
 
 import express from "express";
 import cors from "cors";
@@ -40,6 +44,7 @@ import { config } from "./env";
 import { apiRouter } from "./api";
 import { statisticRouter } from "./statistic";
 
+import { onRequest } from "firebase-functions/v2/https";
 
 const app = express();
 const PORT = config.server.port;
@@ -49,6 +54,11 @@ const allowedOrigins = [
     "http://localhost:3000",
     "https://affiti.aloi.com.br",
 ];
+
+if(process.env.LOCALHOSTER)
+{
+    allowedOrigins.push(process.env.LOCALHOSTER);
+}
 
 // Middleware
 app.use(cors({
@@ -116,7 +126,7 @@ async function connectToMongoDB() {
                     },
                 ],
             },
-            apis: [path.join(__dirname, "./api.ts")], // Path to the file with API annotations
+            apis: [path.join(__dirname, "./api.ts"),path.join(__dirname, "./statistic.ts")], // Path to the file with API annotations
         };
         const swaggerDocs = swaggerJsdoc(swaggerOptions);
         app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
@@ -165,7 +175,6 @@ async function startServer() {
     });
 }
 
-import { onRequest } from "firebase-functions/v2/https";
 exports.api = onRequest(app);
 
 
