@@ -5,7 +5,7 @@ import { config } from "./env";
 export const statisticRouter = (client: MongoClient) => {
     const router = Router();
 
-    
+
   /**
    * @swagger
    * /statistic/affiti:

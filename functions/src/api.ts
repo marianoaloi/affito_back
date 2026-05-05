@@ -379,7 +379,7 @@ export const apiRouter = (client: MongoClient) => {
     }
   });
 
-  
+
   /**
    * @swagger
    * /api/affito/bulk/state:

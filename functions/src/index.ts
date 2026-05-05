@@ -29,7 +29,7 @@ setGlobalOptions({ maxInstances: 10 });
 //   logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 //});
- 
+
 
 import { configDotenv } from "dotenv";
 configDotenv({debug: true});
@@ -55,8 +55,7 @@ const allowedOrigins = [
     "https://affiti.aloi.com.br",
 ];
 
-if(process.env.LOCALHOSTER)
-{
+if (process.env.LOCALHOSTER) {
     allowedOrigins.push(process.env.LOCALHOSTER);
 }
 
@@ -126,7 +125,7 @@ async function connectToMongoDB() {
                     },
                 ],
             },
-            apis: [path.join(__dirname, "./api.ts"),path.join(__dirname, "./statistic.ts")], // Path to the file with API annotations
+            apis: [path.join(__dirname, "./api.ts"), path.join(__dirname, "./statistic.ts")], // Path to the file with API annotations
         };
         const swaggerDocs = swaggerJsdoc(swaggerOptions);
         app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
