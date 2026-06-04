@@ -1,0 +1,8 @@
+node_modules/
+lib/
+.git/
+.firebase/
+.vscode/
+*.local
+.env.*
+firebase-debug*.log

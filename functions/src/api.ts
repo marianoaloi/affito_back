@@ -4,6 +4,9 @@ import { MongoClient } from "mongodb";
 import { config } from "./env";
 import authenticate from "./firebaseAuth";
 
+
+import * as logger from "firebase-functions/logger";
+
 export const apiRouter = (client: MongoClient) => {
   const router = Router();
 
@@ -227,7 +230,7 @@ export const apiRouter = (client: MongoClient) => {
         count: documents.length
       });
     } catch (error) {
-      console.error("Error fetching data:", error);
+      logger.error("Error fetching data:", error);
       res.status(500).json({
         success: false,
         error: "Failed to fetch data from database"
@@ -313,7 +316,7 @@ export const apiRouter = (client: MongoClient) => {
         count: documents.length
       });
     } catch (error) {
-      console.error("Error fetching data:", error);
+      logger.error("Error fetching data:", error);
       res.status(500).json({
         success: false,
         error: "Failed to fetch data from database"
@@ -371,7 +374,7 @@ export const apiRouter = (client: MongoClient) => {
         data: document
       });
     } catch (error) {
-      console.error("Error fetching document:", error);
+      logger.error("Error fetching document:", error);
       res.status(500).json({
         success: false,
         error: "Failed to fetch document " + error
@@ -457,7 +460,7 @@ export const apiRouter = (client: MongoClient) => {
         ids: realEstateIds
       });
     } catch (error) {
-      console.error("Error updating document:", error);
+      logger.error("Error updating document:", error);
       res.status(500)
       res.json({
         success: false,
@@ -556,7 +559,7 @@ export const apiRouter = (client: MongoClient) => {
         message: "State updated successfully"
       });
     } catch (error) {
-      console.error("Error updating document:", error);
+      logger.error("Error updating document:", error);
       res.status(500).json({
         success: false,
         error: "Failed to update document " + error
@@ -654,7 +657,7 @@ export const apiRouter = (client: MongoClient) => {
         message: "Description updated successfully"
       });
     } catch (error) {
-      console.error("Error updating document:", error);
+      logger.error("Error updating document:", error);
       res.status(500).json({
         success: false,
         error: "Failed to update document " + error

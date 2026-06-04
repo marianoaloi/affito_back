@@ -1,0 +1,17 @@
+services:
+  api:
+    build:
+      context: C:/Users/maria/prj/JS/backaffitofirebase/functions
+      dockerfile: Dockerfile
+    container_name: AffittoBE
+    ports:
+      - "5078:5078"
+    environment:
+      NODE_ENV: production
+      PORT: 5078
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5078//api/health | grep success"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
